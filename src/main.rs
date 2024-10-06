@@ -57,7 +57,7 @@ fn main() {
         },
 
         Err(err) => {
-            println!("{}: Failed to initialize channel: {:?}", "Error".red().bold(), err.to_string().bright_black().bold());
+            println!("{}: Failed to initialize channel: {}", "Error".red().bold(), err.to_string().bright_black().bold());
             return;
         }
     };
