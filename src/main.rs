@@ -12,7 +12,7 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-use clap::{Parser, Subcommand};
+use clap::{Parser};
 use colored::Colorize;
 
 #[derive(Parser)]
@@ -24,7 +24,7 @@ struct Cli {
 }
 
 fn main() {
-    use pnet::datalink::{self, Channel, ChannelType};
+    use pnet::datalink::{self, Channel};
     use pnet::packet::Packet;
     use pnet::packet::ethernet::{EthernetPacket, EtherType};
     use pnet::packet::arp::{ArpPacket};
@@ -47,7 +47,7 @@ fn main() {
     config.promiscuous = true; // Enable promiscuous mode
     config.read_timeout = None; // Set no timeout
 
-    let (mut tx, mut rx) = match datalink::channel(&interface, config) {
+    let (_tx, mut rx) = match datalink::channel(&interface, config) {
         Ok(Channel::Ethernet(tx, rx)) => (tx, rx),
 
         Ok(_) => {
