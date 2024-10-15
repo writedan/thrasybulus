@@ -39,7 +39,7 @@ fn main() {
 
     if let None = interface {
         println!("{}: No such interface: {}", "Error".red().bold(), cli.interface.bright_black().bold());
-        return;
+        std::process::exit(1);
     }
 
     let interface = interface.unwrap();
@@ -53,14 +53,16 @@ fn main() {
 
         Ok(_) => {
             println!("{}: Unsupported channel type", "Error".red().bold());
-            return;
+            std::process::exit(2);
         },
 
         Err(err) => {
             println!("{}: Failed to initialize channel: {}", "Error".red().bold(), err.to_string().bright_black().bold());
-            return;
+            std::process::exit(3);
         }
     };
+
+    println!("Listening on interface: {}", cli.interface.bright_black().bold());
 
     loop {
         match rx.next() {
@@ -68,19 +70,8 @@ fn main() {
                 let eth_packet = EthernetPacket::new(packet).unwrap();
                 if eth_packet.get_ethertype() == EtherType(0x0806) {
                     if let Some(arp_packet) = ArpPacket::new(eth_packet.payload()) {
-                        let pnet::packet::arp::ArpOperation(opcode) = arp_packet.get_operation();
-                        match opcode {
-                            1 => {
-                                //println!("{} Who has {}? Tell {}", "ARP REQUEST".blue(), arp_packet.get_target_proto_addr(), arp_packet.get_sender_proto_addr());
-                            },
-
-                            2 => {
-                                println!("{} {} is at {} (destination: {})", "ARP REPLY".blue(), arp_packet.get_sender_proto_addr(), arp_packet.get_sender_hw_addr(), arp_packet.get_target_proto_addr());
-                            },
-
-                            _ => {
-                                println!("{}: Unsupported ARP opcode {}", "Error".red().bold(), opcode.to_string().bright_black().bold());
-                            }
+                        if let pnet::packet::arp::ArpOperation(2) = arp_packet.get_operation() {
+                            println!("{} {} is at {} (destination: {})", "ARP REPLY".blue(),arp_packet.get_sender_proto_addr(), arp_packet.get_sender_hw_addr(), arp_packet.get_target_proto_addr());
                         }
                     } else {
                         println!("{}: Could not parse ARP packet", "Error".red().bold());
