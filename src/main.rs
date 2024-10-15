@@ -71,11 +71,11 @@ fn main() {
                         let pnet::packet::arp::ArpOperation(opcode) = arp_packet.get_operation();
                         match opcode {
                             1 => {
-                                println!("{} Who has {}? Tell {}", "ARP REQUEST".blue(), arp_packet.get_target_proto_addr(), arp_packet.get_sender_proto_addr());
+                                //println!("{} Who has {}? Tell {}", "ARP REQUEST".blue(), arp_packet.get_target_proto_addr(), arp_packet.get_sender_proto_addr());
                             },
 
                             2 => {
-                                println!("{} {} is at {}", "ARP REPLY".blue(), arp_packet.get_sender_proto_addr(), arp_packet.get_sender_hw_addr());
+                                println!("{} {} is at {} (destination: {})", "ARP REPLY".blue(), arp_packet.get_sender_proto_addr(), arp_packet.get_sender_hw_addr(), arp_packet.get_target_proto_addr());
                             },
 
                             _ => {
