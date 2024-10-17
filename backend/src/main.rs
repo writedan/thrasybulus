@@ -113,7 +113,7 @@ fn entry() -> Result<(), String> {
                 let eth_packet = match EthernetPacket::new(packet) {
                     Some(p) => p,
                     None => {
-                        return Err("No packet to read.".into());
+                        return Err(format!("{}: No packet to read.", "Error".red().bold()));
                     }
                 };
 
@@ -128,7 +128,7 @@ fn entry() -> Result<(), String> {
                             match database.execute("INSERT INTO arp_requests (source, dest, timestamp) VALUES(?1, ?2, ?3)", (&source, &dest, &timestamp)) {
                                 Ok(_) => {},
                                 Err(why) => {
-                                    return Err(format!("Failed to execute query: {}", why.to_string().bright_black().bold()));
+                                    println!("{}: Failed to execute query: {}", "Error".red().bold(), why.to_string().bright_black().bold());
                                 }
                             };
                             println!("{} {} asks for {}", "ARP REQUEST".blue(), source.bright_black().bold(), dest.bright_black().bold());
@@ -141,7 +141,7 @@ fn entry() -> Result<(), String> {
                             match database.execute("INSERT INTO arp_replies (replier_ip, replier_mac, destination_ip, timestamp) VALUES (?1, ?2, ?3, ?4)", (&replier_ip, &replier_mac, &destination_ip, &timestamp)) {
                                 Ok(_) => {},
                                 Err(why) => {
-                                    return Err(format!("Failed to execute query: {}", why.to_string().bright_black().bold()));
+                                    println!("{}: Failed to execute query: {}", "Error".red().bold(), why.to_string().bright_black().bold());
                                 }
                             };
                             println!("{} {} is at {} (replying to {})", "ARP REPLY  ".blue(), replier_ip.bright_black().bold(), replier_mac.bright_black().bold(), destination_ip.bright_black().bold());
@@ -153,7 +153,7 @@ fn entry() -> Result<(), String> {
             },
 
             Err(why) => {
-                return Err(format!("Failed to read packet: {}", why.to_string().bright_black().bold()));
+                println!("{}: Failed to read packet: {}", "Error".red().bold(), why.to_string().bright_black().bold());
             }
         }
     }
