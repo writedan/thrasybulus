@@ -77,7 +77,7 @@ fn load() -> std::path::PathBuf {
     if let Err(why) = run_fun!(
         cd "$data_dir";
         cd "git-repo";
-        git pull --force;
+        git pull --force --rebase;
     ) {
         println!("Warning: unable to pull updates.");
     }
