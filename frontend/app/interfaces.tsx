@@ -1,8 +1,10 @@
 import { Text, View, Alert, StyleSheet, ScrollView, Pressable } from "react-native";
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useContext } from 'react';
 
 import ErrorBox from './components/ErrorBox';
 import Button from './components/Button';
+
+import { NavigationContext } from './providers/NavigationContext';
 
 import axios from 'axios';
 
@@ -10,6 +12,8 @@ const InterfaceIndex = () => {
 	const [err, setError] = useState({});
 	const [interfaces, setInterfaces] = useState([]);
 	const [ifaceViews, setIfaceViews] = useState([]);
+
+    const {setNavPage, setNavArgs} = useContext(NavigationContext);
 
 	useEffect(() => {
 		fetchData = async () => {
@@ -67,7 +71,8 @@ const InterfaceIndex = () => {
                             )}
 		                </ScrollView>
 		                <Button text="Use Sniffer" onClick={() => {
-		                	console.log(iface);
+		                	setNavPage('interface');
+                            setNavArgs({'interface': iface});
 		                }}/>
 		            </View>
 		        </View>

@@ -5,6 +5,8 @@ import { NavigationProvider, NavigationContext } from './providers/NavigationCon
 
 import InterfaceIndex from './interfaces';
 
+import ErrorBox from './components/ErrorBox';
+
 export default function App() {
   return (
     <NavigationProvider>
@@ -18,6 +20,14 @@ const Navigation = () => {
   
   if (navPage == "index") {
     return (<InterfaceIndex />);
+  }
+  else {
+    return (
+      <ErrorBox 
+        head={"Internal Error"}
+        body={`Unknown navigation page ${navPage}`}
+      />
+    );
   }
 };
 
