@@ -98,33 +98,11 @@ fn load() -> std::path::PathBuf {
         cd "$data_dir";
         cd "git-repo";
         cd "frontend";
-        npm install --loglevel verbose;
+        npm install -y --loglevel verbose;
     ) {
         println!("Fatal error: failed to build NPM dependencies.");
         std::process::exit(6);
     }
-
-    println!("Installing serve.");
-    if let Err(why) = run_cmd!(
-        cd "$data_dir";
-        cd "git-repo";
-        cd "frontend";
-        npm install -g serve --loglevel verbose;
-    ) {
-        println!("Fatal error: failed to install NPM serve package.");
-        std::process::exit(7);
-    }
-
-    println!("Building frontend for production.");
-    if let Err(_) = run_cmd!(
-        cd "$data_dir";
-        cd "git-repo";
-        cd "frontend";
-        npm run build;
-    ) {
-        println!("Fatal error: failed to build frontend for production.");
-        std::process::exit(8);
-    };
 
     println!("Load complete.");
     return data_dir.to_path_buf();
@@ -134,11 +112,22 @@ fn launch_frontend(port: u32, data_dir: &std::path::PathBuf) {
     let data_dir = data_dir.clone();
     std::thread::spawn(move || {
         loop {
+            println!("Updating NPM dependencies.");
+            if let Err(why) = cmd_lib::run_cmd!(
+                cd "$data_dir";
+                cd "git-repo";
+                cd "frontend";
+                npm install -y --loglevel verbose;
+            ) {
+                println!("Fatal error: failed to build NPM dependencies.");
+                std::process::exit(6);
+            }
+
             match cmd_lib::run_cmd!(
                 cd "$data_dir";
                 cd "git-repo";
                 cd "frontend";
-                npx serve -s build -p "$port";
+                npx expo start --no-dev --minify -p "$port";
             ) {
                 _ => {
                     println!("Frontend server terminated, restarting.");
