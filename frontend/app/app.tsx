@@ -1,4 +1,4 @@
-import { Text, View } from "react-native";
+import { Text, View, StyleSheet } from "react-native";
 import { useContext } from 'react';
 
 import { NavigationProvider, NavigationContext } from './providers/NavigationContext';
@@ -20,3 +20,11 @@ const Navigation = () => {
     return (<InterfaceIndex />);
   }
 };
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    alignItems: 'center',
+    width: '100%'
+  }
+});
