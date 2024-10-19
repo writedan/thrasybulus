@@ -98,7 +98,7 @@ fn load() -> std::path::PathBuf {
         cd "$data_dir";
         cd "git-repo";
         cd "frontend";
-        npm install -y;
+        npm install -y --loglevel verbose;
     ) {
         println!("Fatal error: failed to build NPM dependencies.");
         std::process::exit(6);
@@ -117,11 +117,14 @@ fn launch_frontend(port: u32, data_dir: &std::path::PathBuf) {
                 cd "$data_dir";
                 cd "git-repo";
                 cd "frontend";
-                npm install -y;
+                npm install -y --loglevel verbose;
             ) {
                 println!("Fatal error: failed to build NPM dependencies.");
                 std::process::exit(6);
             }
+
+            println!("Internal server running on http://localhost:9901/");
+            println!("Frontend server running on http://0.0.0.0:{}/", port);
 
             match cmd_lib::run_fun!(
                 cd "$data_dir";
@@ -179,9 +182,6 @@ fn main() {
             )
         });
     });
-
-    println!("Internal server running on http://localhost:9901/");
-    println!("Frontend server running on http://0.0.0.0:{}", args.port);
 
     loop {}
 }
