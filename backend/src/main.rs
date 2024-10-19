@@ -30,7 +30,7 @@ fn verify_installed(program: &str) -> bool {
 }
 
 fn load() -> std::path::PathBuf {
-    use cmd_lib::run_cmd;
+    use cmd_lib::run_fun;
 
     fn mkdir(path: &std::path::Path) -> std::io::Result<()> {
         use std::fs;
@@ -64,7 +64,7 @@ fn load() -> std::path::PathBuf {
     println!("Data directory is at {:#?}", data_dir);
     if !data_dir.join("git-repo").exists() {
         println!("This appears to be a first-time run. We will clone the repository now.");
-        if let Err(why) = run_cmd!(
+        if let Err(why) = run_fun!(
             cd "$data_dir";
             git clone "https://github.com/writedan/thrasybulus" "git-repo";
         ) {
@@ -74,7 +74,7 @@ fn load() -> std::path::PathBuf {
     }
 
     println!("Pulling updates from Git.");
-    if let Err(why) = run_cmd!(
+    if let Err(why) = run_fun!(
         cd "$data_dir";
         cd "git-repo";
         git pull --force;
@@ -83,7 +83,7 @@ fn load() -> std::path::PathBuf {
     }
 
     println!("Building sniffer.");
-    if let Err(why) = run_cmd!(
+    if let Err(why) = run_fun!(
         cd "$data_dir";
         cd "git-repo";
         cd "sniffer";
@@ -94,7 +94,7 @@ fn load() -> std::path::PathBuf {
     }
 
     println!("Updating NPM dependencies.");
-    if let Err(why) = run_cmd!(
+    if let Err(why) = run_fun!(
         cd "$data_dir";
         cd "git-repo";
         cd "frontend";
@@ -113,7 +113,7 @@ fn launch_frontend(port: u32, data_dir: &std::path::PathBuf) {
     std::thread::spawn(move || {
         loop {
             println!("Updating NPM dependencies.");
-            if let Err(why) = cmd_lib::run_cmd!(
+            if let Err(why) = cmd_lib::run_fun!(
                 cd "$data_dir";
                 cd "git-repo";
                 cd "frontend";
@@ -123,7 +123,8 @@ fn launch_frontend(port: u32, data_dir: &std::path::PathBuf) {
                 std::process::exit(6);
             }
 
-            match cmd_lib::run_cmd!(
+            println!("Launching frontend server on http://0.0.0.0{}/", port);
+            match cmd_lib::run_fun!(
                 cd "$data_dir";
                 cd "git-repo";
                 cd "frontend";
