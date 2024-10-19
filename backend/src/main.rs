@@ -93,12 +93,12 @@ fn load() -> std::path::PathBuf {
         std::process::exit(5);
     }
 
-    println!("Updating NPM dependencies.");
+    println!("Updating NPM dependencies (first pass).");
     if let Err(why) = run_fun!(
         cd "$data_dir";
         cd "git-repo";
         cd "frontend";
-        npm install -y --loglevel verbose;
+        npm install -y;
     ) {
         println!("Fatal error: failed to build NPM dependencies.");
         std::process::exit(6);
@@ -112,18 +112,17 @@ fn launch_frontend(port: u32, data_dir: &std::path::PathBuf) {
     let data_dir = data_dir.clone();
     std::thread::spawn(move || {
         loop {
-            println!("Updating NPM dependencies.");
+            println!("Updating NPM dependencies (second pass).");
             if let Err(why) = cmd_lib::run_fun!(
                 cd "$data_dir";
                 cd "git-repo";
                 cd "frontend";
-                npm install -y --loglevel verbose;
+                npm install -y;
             ) {
                 println!("Fatal error: failed to build NPM dependencies.");
                 std::process::exit(6);
             }
 
-            println!("Launching frontend server on http://0.0.0.0{}/", port);
             match cmd_lib::run_fun!(
                 cd "$data_dir";
                 cd "git-repo";
@@ -160,24 +159,29 @@ fn main() {
 
     launch_frontend(args.port, &data_dir);
 
-    println!("Starting internal server on http://localhost:9901/");
+    std::thread::spawn(move || {
+        rouille::start_server("localhost:9901", move |request| {
+            rouille::router!(request,
+                (GET) (/interfaces) => {
+                    use pnet::datalink::{self};
+                    let interfaces = datalink::interfaces();
+                    rouille::Response::json(&interfaces)
+                },
 
-    rouille::start_server("localhost:9901", move |request| {
-        rouille::router!(request,
-            (GET) (/interfaces) => {
-                use pnet::datalink::{self};
-                let interfaces = datalink::interfaces();
-                rouille::Response::json(&interfaces)
-            },
+                (POST) (/interface/IsLive) => {
+                    let input = rouille::try_or_400!(rouille::post_input!(request, {
+                        interface: String
+                    }));
+                    rouille::Response::text(format!("{:#?}", input))
+                },
 
-            (POST) (/interface/IsLive) => {
-                let input = rouille::try_or_400!(rouille::post_input!(request, {
-                    interface: String
-                }));
-                rouille::Response::text(format!("{:#?}", input))
-            },
-
-            _ => rouille::Response::empty_404()
-        )
+                _ => rouille::Response::empty_404()
+            )
+        });
     });
+
+    println!("Internal server running on http://localhost:9901/");
+    println!("Frontend server running on http://0.0.0.0:{}", args.port);
+
+    loop {}
 }
