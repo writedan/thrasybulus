@@ -1,6 +1,13 @@
 [package]
-name = "backend"
+name = "thrasybulus-backend"
 version = "0.1.0"
 edition = "2021"
 
 [dependencies]
+clap = { version = "4.5.19", features = ["derive"] }
+rouille = "3.6.2"
+pnet = { version = "0.35.0", features = ["serde"] }
+serde = {version = "1.0.210", features = ["derive"] }
+tokio = { version = "1", features = ["full"] }
+directories = "5.0"
+cmd_lib = "1.9.5"
