@@ -35,17 +35,17 @@ const Button = ({ text, onClick }) => {
 
 
     return (
-    	<Animated.View style={[styles.button, {backgroundColor}]}>
-	        <Pressable
-	            onPress={onClick}
-	            onHoverIn={handleHoverIn}
-	            onHoverOut={handleHoverOut}
-	        >
-	            <Animated.Text style={[styles.text, { color: textColor }]}>
-	                {text}
-	            </Animated.Text>
-	        </Pressable>
-        </Animated.View>
+        <Pressable
+            onPress={onClick}
+            onHoverIn={handleHoverIn}
+            onHoverOut={handleHoverOut}
+        >
+            <Animated.View style={[styles.button, {backgroundColor}]}>
+                <Animated.Text style={[styles.text, { color: textColor }]}>
+                    {text}
+                </Animated.Text>
+            </Animated.View>
+        </Pressable>
     );
 };
 
