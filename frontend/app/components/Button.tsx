@@ -52,10 +52,8 @@ const Button = ({ text, onClick }) => {
 const styles = StyleSheet.create({
     button: {
         justifyContent: 'center',
-        alignItems: 'center',
         padding: 10,
         borderRadius: 5,
-        marginLeft: 10,
         borderWidth: 1,
         borderColor: '#007bff',
     },

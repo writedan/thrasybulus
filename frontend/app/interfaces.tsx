@@ -93,7 +93,7 @@ const InterfaceIndex = () => {
 		            	<View style={styles.statusContainer}>
 		                    <View style={[styles.circle, styles[`${status}Circle`] ]} />
 		                    <Text style={[styles.status, styles[status]]}>
-		                        {status == undefined ? "Status unavailable" : (status == 'active' ? 'Active' : 'Inactive')}
+		                        {status == undefined ? "Status unavailable" : status}
 		                    </Text>
 		                </View>
 		                <Text style={styles.ifaceDescription}>{iface.description || "[No description available]"}</Text>
@@ -126,22 +126,49 @@ const InterfaceIndex = () => {
 
 	return (
         <>
-    		<ScrollView>
-    			{ifaceViews}
-    		</ScrollView>
+            <View style={styles.container}>
+                <View>
+                    <Text style={styles.appName}>Thrasybulus</Text>
+                    <Button
+                        text="Refresh"
+                        onClick={() => {
+                            fetchData();
+                            reloadInterfaces();
+                        }}
+                    />
+                </View>
 
-            <Button
-                text="Refresh"
-                onClick={() => {
-                    fetchData();
-                    reloadInterfaces();
-                }}
-            />
+        		<ScrollView>
+        			{ifaceViews}
+        		</ScrollView>
+            </View>
         </>
 	);
 };
 
 const styles = StyleSheet.create({
+    container: {
+        flex: 1,
+        padding: 20,
+        backgroundColor: '#f8f8f8',
+        borderRadius: 10,
+        shadowColor: '#000',
+        shadowOffset: {
+          width: 0,
+          height: 2,
+        },
+        shadowOpacity: 0.2,
+        shadowRadius: 4,
+        elevation: 5,
+        flexDirection: 'row'
+    },
+    appName: {
+        fontSize: 26,
+        fontWeight: 'bold',
+        marginBottom: 20,
+        textAlign: 'center',
+        color: '#333',
+    },
     iface: {
         padding: 16,
         margin: 10,

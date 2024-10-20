@@ -16,10 +16,12 @@ export default function App() {
 };
 
 const Navigation = () => {
-  const {navPage, setNavPage} = useContext(NavigationContext);
+  const {navPage, setNavPage, navArgs} = useContext(NavigationContext);
   
   if (navPage == "index") {
     return (<InterfaceIndex />);
+  } else if (navPage == "interface") {
+    return (<Text>interface {navArgs.interface.name}</Text>)
   }
   else {
     return (

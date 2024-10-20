@@ -6,10 +6,6 @@ export const NavigationProvider = ({children}) => {
 	const [navPage, setNavPage] = useState('index');
 	const [navArgs, setNavArgs] = useState({});
 
-	useEffect(() => {
-		setNavArgs({});
-	}, [navPage]);
-
 	return (
 		<NavigationContext.Provider value={{ navPage, setNavPage, navArgs, setNavArgs }}>
 			{children}
