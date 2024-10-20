@@ -1,8 +1,9 @@
-import { Text, View, Alert, StyleSheet, ScrollView, Pressable } from "react-native";
+import { Text, View, StyleSheet, ScrollView, Pressable } from "react-native";
 import { useEffect, useState, useContext } from 'react';
 
 import ErrorBox from './components/ErrorBox';
 import Button from './components/Button';
+import WAlert from './components/Alert';
 
 import { NavigationContext } from './providers/NavigationContext';
 
@@ -12,38 +13,76 @@ const InterfaceIndex = () => {
 	const [err, setError] = useState({});
 	const [interfaces, setInterfaces] = useState([]);
 	const [ifaceViews, setIfaceViews] = useState([]);
+    const [statuses, setStatuses] = useState({});
+    const [checkedStatus, setCheckedStatus] = useState(false);
 
     const {setNavPage, setNavArgs} = useContext(NavigationContext);
 
+    const handleAxiosError = (error) => {
+            console.error(error);
+            const err = {head: 'Network Error'};
+            
+            if (error.code == 'ERR_NETWORK') {
+                err.body = "Failed to reach server.";
+            } else if (error.code == 'ERR_BAD_REQUEST') {
+                err.body = `Bad request: ${error.message}`;
+            }
+            else {
+                err.body = "An unknown error occured.";
+            }
+
+            if (error.response) {
+                if (error.response.data) {
+                    err.body += `: ${error.response.data}`;
+                }
+            }
+
+            WAlert(err.head, err.body);
+    };
+
+    const fetchData = async () => {
+        try {
+            const resp = await axios.get("http://localhost:9901/interfaces");
+            const data = resp.data;
+            setInterfaces(data);
+        } catch (error) {
+            handleAxiosError(error);
+        }
+    };
+
+    const reloadInterfaces = async () => {
+        const statuses = {};
+        for (let iface of interfaces) {
+            try {
+                const resp = await axios.post("http://localhost:9901/interface/IsLive", {
+                    "interface": iface.name
+                });
+
+                if (resp.data == "active" || resp.data == "inactive") {
+                    statuses[iface.name] = resp.data;
+                } else {
+                    WAlert("API Error", `Interface status check for "${iface.name}" returned unknown value "${resp.data}"`);
+                }
+            } catch (err) {
+                handleAxiosError(err);
+            }
+        }
+
+        setStatuses(statuses);
+    };
+
 	useEffect(() => {
-		fetchData = async () => {
-			try {
-				const resp = await axios.get("http://localhost:9901/interfaces");
-				const data = resp.data;
-				setInterfaces(data);
-			} catch (error) {
-				console.error(error);
-				const err = {head: 'Network Error'};
-				
-				if (error.code == 'ERR_NETWORK') {
-					err.body = "Failed to reach server.";
-				} else if (error.code == 'ERR_BAD_REQUEST') {
-					err.body = `Bad request: ${error.message}`;
-				}
-				else {
-					err.body = "An unknown error occured.";
-				}
-
-				setError(err);
-			}
-		};
-
 		fetchData();
 	}, []);
+
+    useEffect(() => {
+        reloadInterfaces();
+    }, [interfaces]);
 
 	useEffect(() => {
 		const views = [];
 		for (let iface of interfaces) {
+            const status = statuses[iface.name];
 			views.push((
 				<View style={styles.iface} key={iface.name}>
 		            <View style={styles.nameMacContainer}>
@@ -52,9 +91,9 @@ const InterfaceIndex = () => {
 		            </View>
 		            <View style={styles.descriptionContainer}>
 		            	<View style={styles.statusContainer}>
-		                    <View style={[styles.circle, iface.active ? styles.activeCircle : styles.inactiveCircle]} />
-		                    <Text style={[styles.status, iface.active ? styles.active : styles.inactive]}>
-		                        {iface.active ? 'Active' : 'Inactive'}
+		                    <View style={[styles.circle, styles[`${status}Circle`] ]} />
+		                    <Text style={[styles.status, styles[status]]}>
+		                        {status == undefined ? "Status unavailable" : (status == 'active' ? 'Active' : 'Inactive')}
 		                    </Text>
 		                </View>
 		                <Text style={styles.ifaceDescription}>{iface.description || "[No description available]"}</Text>
@@ -70,23 +109,35 @@ const InterfaceIndex = () => {
                                 <Text>This interface has no IP addresses.</Text>
                             )}
 		                </ScrollView>
-		                <Button text="Use Sniffer" onClick={() => {
-		                	setNavPage('interface');
-                            setNavArgs({'interface': iface});
-		                }}/>
+		                <Button 
+                            text="Manage"
+                            onClick={() => {
+    		                	setNavPage('interface');
+                                setNavArgs({'interface': iface});
+		                    }}
+                        />
 		            </View>
 		        </View>
 			));
 		}
 
 		setIfaceViews(views);
-	}, [interfaces]);
+	}, [interfaces, statuses]);
 
 	return (
-		<ScrollView>
-			{ifaceViews}
-			{err.head && (<ErrorBox head={err.head} body={err.body} />)}
-		</ScrollView>
+        <>
+    		<ScrollView>
+    			{ifaceViews}
+    		</ScrollView>
+
+            <Button
+                text="Refresh"
+                onClick={() => {
+                    fetchData();
+                    reloadInterfaces();
+                }}
+            />
+        </>
 	);
 };
 
@@ -137,7 +188,8 @@ const styles = StyleSheet.create({
         width: 10,
         height: 10,
         borderRadius: 5,
-        marginRight: 4, // Space between circle and text
+        marginRight: 4,
+        backgroundColor: 'grey'
     },
     activeCircle: {
         backgroundColor: 'green',
@@ -148,6 +200,7 @@ const styles = StyleSheet.create({
     status: {
         fontSize: 12,
         fontWeight: 'bold',
+        color: 'grey'
     },
     active: {
         color: 'green',
@@ -173,18 +226,6 @@ const styles = StyleSheet.create({
     ifaceIp: {
         fontSize: 14,
         color: 'black',
-    },
-    snifferButton: {
-        justifyContent: 'center',
-        alignItems: 'center',
-        padding: 10,
-        backgroundColor: '#007bff',
-        borderRadius: 5,
-        marginLeft: 10,
-    },
-    snifferButtonText: {
-        color: 'white',
-        fontSize: 14,
     },
 });
 
